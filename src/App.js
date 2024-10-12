@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const tableIcons = [
   { id: 'bar', name: 'Bar Chart', icon: '📊' },
@@ -23,6 +23,14 @@ const pieChartData = [
   { name: 'Group D', value: 200 },
 ];
 
+const chartData = [
+  { name: 'Jan', value: 400 },
+  { name: 'Feb', value: 300 },
+  { name: 'Mar', value: 600 },
+  { name: 'Apr', value: 800 },
+  { name: 'May', value: 500 },
+];
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const ChartComponent = ({ type }) => {
@@ -39,7 +47,21 @@ const ChartComponent = ({ type }) => {
         </BarChart>
       </ResponsiveContainer>
     );
-  } else if (type === 'pie') {
+  } else if (type === 'line') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="value" stroke="#8884d8" />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  }
+  else if (type === 'pie') {
     return (
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
