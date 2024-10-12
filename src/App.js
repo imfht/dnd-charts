@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
+import { Rnd } from 'react-rnd';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Responsive, WidthProvider } from 'react-grid-layout';
-import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
-
-const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const tableIcons = [
   { id: 'bar', name: 'Bar Chart', icon: '📊' },
@@ -84,22 +80,31 @@ const App = () => {
     e.preventDefault();
     const type = e.dataTransfer.getData('text');
     const newChart = {
-      i: `chart-${Date.now()}`,
-      x: (charts.length * 2) % 12,
-      y: Infinity, // puts it at the bottom
-      w: 6,
-      h: 2,
-      type: type
+      id: `chart-${Date.now()}`,
+      type: type,
+      x: e.clientX - e.target.offsetLeft,
+      y: e.clientY - e.target.offsetTop,
+      width: 300,
+      height: 200,
     };
     setCharts([...charts, newChart]);
   };
 
-  const onLayoutChange = (layout) => {
-    const updatedCharts = charts.map(chart => {
-      const updatedLayout = layout.find(l => l.i === chart.i);
-      return { ...chart, ...updatedLayout };
-    });
-    setCharts(updatedCharts);
+  const onDragStop = (id, d) => {
+    setCharts(charts.map(chart => 
+      chart.id === id ? { ...chart, x: d.x, y: d.y } : chart
+    ));
+  };
+
+  const onResizeStop = (id, ref, delta, position) => {
+    setCharts(charts.map(chart => 
+      chart.id === id ? { 
+        ...chart, 
+        width: ref.style.width, 
+        height: ref.style.height,
+        ...position 
+      } : chart
+    ));
   };
 
   return (
@@ -120,20 +125,28 @@ const App = () => {
       </div>
       <div className="canvas" onDragOver={onDragOver} onDrop={onDrop}>
         <h3>Dashboard Canvas</h3>
-        <ResponsiveGridLayout
-          className="layout"
-          layouts={{ lg: charts }}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-          rowHeight={100}
-          onLayoutChange={onLayoutChange}
-        >
-          {charts.map((chart) => (
-            <div key={chart.i} className="chart-container">
+        {charts.map((chart) => (
+          <Rnd
+            key={chart.id}
+            default={{
+              x: chart.x,
+              y: chart.y,
+              width: chart.width,
+              height: chart.height,
+            }}
+            minWidth={200}
+            minHeight={150}
+            bounds="parent"
+            onDragStop={(e, d) => onDragStop(chart.id, d)}
+            onResizeStop={(e, direction, ref, delta, position) => 
+              onResizeStop(chart.id, ref, delta, position)
+            }
+          >
+            <div className="chart-container">
               <ChartComponent type={chart.type} />
             </div>
-          ))}
-        </ResponsiveGridLayout>
+          </Rnd>
+        ))}
       </div>
     </div>
   );
