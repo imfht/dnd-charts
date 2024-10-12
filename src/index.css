@@ -11,3 +11,71 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 3fr 9fr;
+  height: 100vh;
+}
+
+.sidebar {
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ccc;
+}
+
+.canvas {
+  padding: 20px;
+  background-color: #fff;
+  overflow: auto;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: move;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.icon span:first-child {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.chart-container {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chart-container > div {
+  flex: 1;
+  min-height: 0;  /* 这是关键，允许内容收缩 */
+}
+
+/* 确保 ResponsiveContainer 填满其父容器 */
+.recharts-responsive-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 为 react-grid-layout 的项目添加一些额外的样式 */
+.react-grid-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
