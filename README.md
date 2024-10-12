@@ -1,8 +1,7 @@
-# Getting Started with Create React App
+# dnd-charts
+An example for drag-and-drop charts in react.
 
 ![Xnip2024-10-12_22-40-14](https://github.com/user-attachments/assets/d1ffffac-3bc8-4fae-86dc-2e92a26c9af9)
-
-
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
