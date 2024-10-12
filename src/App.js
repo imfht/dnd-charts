@@ -146,7 +146,7 @@ const App = () => {
         ))}
       </div>
       <div className="canvas" onDragOver={onDragOver} onDrop={onDrop}>
-        <h3>Dashboard Canvas</h3>
+        <h3>Dashboard</h3>
         {charts.map((chart) => (
           <Rnd
             key={chart.id}
