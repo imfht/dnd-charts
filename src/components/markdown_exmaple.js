@@ -1,74 +1,174 @@
-import React, { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import React, { useState, useCallback, useRef } from 'react';
+import ReactFlow, {
+  addEdge,
+  Background,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState
+} from 'reactflow';
+import 'reactflow/dist/style.css';
 
-const MarkdownEditor = () => {
-  const [markdown, setMarkdown] = useState('# Hello\n\nType some *markdown* here!\n\n- List item 1\n- List item 2\n\n1. Numbered item 1\n2. Numbered item 2\n\n[Link](https://example.com)\n\n```\ncode block\n```');
+const DataNode = ({ data }) => (
+  <div className="p-2 border rounded bg-blue-100 w-64">
+    <strong>Data Node: {data.label}</strong>
+    <textarea
+      value={data.jsonData}
+      onChange={(evt) => data.onChange(evt.target.value)}
+      className="w-full h-24 mt-2 p-1 text-sm"
+      placeholder="Enter JSON data"
+    />
+  </div>
+);
+
+const CodeNode = ({ data }) => (
+  <div className="p-2 border rounded bg-green-100 w-64">
+    <strong>Code Node: {data.label}</strong>
+    <textarea
+      value={data.code}
+      onChange={(evt) => data.onChange(evt.target.value)}
+      className="w-full h-24 mt-2 p-1 text-sm"
+      placeholder="Enter JavaScript code"
+    />
+  </div>
+);
+
+const nodeTypes = {
+  dataNode: DataNode,
+  codeNode: CodeNode,
+};
+
+const initialNodes = [
+  { id: '1', type: 'dataNode', position: { x: 250, y: 5 }, data: { label: 'Input Data', jsonData: '{"example": "data"}' } },
+  { id: '2', type: 'codeNode', position: { x: 100, y: 100 }, data: { label: 'Transform', code: 'return input;' } },
+  { id: '3', type: 'dataNode', position: { x: 250, y: 200 }, data: { label: 'Output Data', jsonData: '{}' } },
+];
+
+const initialEdges = [{ id: 'e1-2', source: '1', target: '2' }, { id: 'e2-3', source: '2', target: '3' }];
+
+const ETLFlow = () => {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodeName, setNodeName] = useState('');
+  const [nodeType, setNodeType] = useState('dataNode');
+  const [executionResult, setExecutionResult] = useState('');
+
+  const nodeRef = useRef();
+
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+
+  const addNode = () => {
+    if (nodeName) {
+      const newNode = {
+        id: Date.now().toString(),
+        type: nodeType,
+        position: { x: Math.random() * 300, y: Math.random() * 300 },
+        data: {
+          label: nodeName,
+          jsonData: nodeType === 'dataNode' ? '{}' : undefined,
+          code: nodeType === 'codeNode' ? '// Your code here' : undefined,
+          onChange: (value) => {
+            setNodes((nds) =>
+              nds.map((node) => {
+                if (node.id === newNode.id) {
+                  node.data = {
+                    ...node.data,
+                    [nodeType === 'dataNode' ? 'jsonData' : 'code']: value,
+                  };
+                }
+                return node;
+              })
+            );
+          },
+        },
+      };
+      setNodes((nds) => nds.concat(newNode));
+      setNodeName('');
+    }
+  };
+
+  const executeETL = () => {
+    let result = {};
+    try {
+      // Find the starting data node
+      const startNode = nodes.find(node => node.type === 'dataNode' && !edges.some(edge => edge.target === node.id));
+      if (!startNode) throw new Error('No starting data node found');
+
+      result = JSON.parse(startNode.data.jsonData);
+
+      // Find and execute code nodes in order
+      const codeNodes = nodes.filter(node => node.type === 'codeNode');
+      for (const codeNode of codeNodes) {
+        const inputEdge = edges.find(edge => edge.target === codeNode.id);
+        if (!inputEdge) continue;
+
+        const input = result;
+        const code = codeNode.data.code;
+        // Execute the code
+        const executionFunction = new Function('input', code);
+        result = executionFunction(input);
+      }
+
+      // Find the ending data node and update it
+      const endNode = nodes.find(node => node.type === 'dataNode' && !edges.some(edge => edge.source === node.id));
+      if (endNode) {
+        setNodes(nds => nds.map(node => {
+          if (node.id === endNode.id) {
+            node.data = { ...node.data, jsonData: JSON.stringify(result, null, 2) };
+          }
+          return node;
+        }));
+      }
+
+      setExecutionResult('ETL执行成功');
+    } catch (error) {
+      setExecutionResult(`执行错误: ${error.message}`);
+    }
+  };
 
   return (
-    <div className="container mx-auto p-4 h-screen flex flex-col">
-      <h1 className="text-2xl font-bold mb-4">Markdown Editor</h1>
-      <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex flex-col">
-          <h2 className="text-xl font-semibold mb-2">Input</h2>
-          <textarea
-            className="flex-grow w-full p-2 border border-gray-300 rounded resize-none"
-            value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col">
-          <h2 className="text-xl font-semibold mb-2">Output</h2>
-          <div className="flex-grow border border-gray-300 rounded p-4 markdown-body overflow-auto">
-            <ReactMarkdown>{markdown}</ReactMarkdown>
-          </div>
-        </div>
+    <div className="h-screen w-full">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
+        ref={nodeRef}
+      >
+        <Controls />
+        <MiniMap />
+        <Background variant="dots" gap={12} size={1} />
+      </ReactFlow>
+      <div className="absolute top-0 left-0 p-4 bg-white">
+        <input
+          type="text"
+          value={nodeName}
+          onChange={(e) => setNodeName(e.target.value)}
+          placeholder="Node name"
+          className="border p-2 mr-2"
+        />
+        <select
+          value={nodeType}
+          onChange={(e) => setNodeType(e.target.value)}
+          className="border p-2 mr-2"
+        >
+          <option value="dataNode">Data Node</option>
+          <option value="codeNode">Code Node</option>
+        </select>
+        <button onClick={addNode} className="bg-blue-500 text-white p-2 rounded mr-2">
+          Add Node
+        </button>
+        <button onClick={executeETL} className="bg-green-500 text-white p-2 rounded">
+          Execute ETL
+        </button>
+      </div>
+      <div className="absolute bottom-0 left-0 p-4 bg-white">
+        <strong>Execution Result:</strong> {executionResult}
       </div>
     </div>
   );
 };
 
-// 添加自定义样式
-const styles = `
-  .markdown-body h1 {
-    font-size: 2em;
-    margin-bottom: 0.5em;
-  }
-  .markdown-body h2 {
-    font-size: 1.5em;
-    margin-bottom: 0.5em;
-  }
-  .markdown-body p {
-    margin-bottom: 1em;
-  }
-  .markdown-body ul, .markdown-body ol {
-    margin-bottom: 1em;
-    padding-left: 2em;
-  }
-  .markdown-body li {
-    margin-bottom: 0.5em;
-  }
-  .markdown-body a {
-    color: #3182ce;
-    text-decoration: underline;
-  }
-  .markdown-body code {
-    background-color: #f0f0f0;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-  }
-  .markdown-body pre {
-    background-color: #f0f0f0;
-    padding: 1em;
-    border-radius: 5px;
-    overflow-x: auto;
-  }
-`;
-
-const MarkdownEditorWithStyles = () => (
-  <>
-    <style>{styles}</style>
-    <MarkdownEditor />
-  </>
-);
-
-export default MarkdownEditorWithStyles;
+export default ETLFlow;

@@ -9,6 +9,10 @@ import MarkdownEditor from "./components/markdown_exmaple";
 import Flow from "./components/reactflow_exmaple";
 import ReactLiveExample from "./components/react-live-example";
 import JsonToRecharts from "./components/user_defined_charts";
+import VisualEtlFlow from "./components/react-flow-etl";
+import VisualEtlFlowWithStyles from "./components/react-flow-etl";
+import LightweightEtlFlowWithStyles from "./components/light-etl";
+import ETLFlow from "./components/light-etl";
 
 const NavLink = ({to, children}) => (
     <Link
@@ -40,6 +44,8 @@ function App() {
                                     <NavLink to="/ReactFlow">ReactFlow</NavLink>
                                     <NavLink to="/ReactLiveExample">ReactLiveExample</NavLink>
                                     <NavLink to="/JsonToRecharts">JsonToRecharts</NavLink>
+                                    <NavLink to="/VisualEtlFlow">VisualEtlFlow</NavLink>
+                                    <NavLink to="/ETLFlow">ETLFlow</NavLink>
                                 </div>
                             </div>
                         </div>
@@ -59,6 +65,8 @@ function App() {
                             <Route path="/ReactFlow" element={<Flow/>}/>
                             <Route path="/ReactLiveExample" element={<ReactLiveExample/>}/>
                             <Route path="/JsonToRecharts" element={<JsonToRecharts/>}/>
+                            <Route path="/VisualEtlFlow" element={<VisualEtlFlowWithStyles/>}/>
+                            <Route path="/ETLFlow" element={<ETLFlow/>}/>
                         </Routes>
                     </div>
                 </main>
