@@ -9,9 +9,7 @@ import MarkdownEditor from "./components/markdown_exmaple";
 import Flow from "./components/reactflow_exmaple";
 import ReactLiveExample from "./components/react-live-example";
 import JsonToRecharts from "./components/user_defined_charts";
-import VisualEtlFlow from "./components/react-flow-etl";
 import VisualEtlFlowWithStyles from "./components/react-flow-etl";
-import LightweightEtlFlowWithStyles from "./components/light-etl";
 import ETLFlow from "./components/light-etl";
 
 const NavLink = ({to, children}) => (
