@@ -1,177 +1,70 @@
-import React, { useState } from 'react';
-import { Rnd } from 'react-rnd';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import React from 'react';
+import {BrowserRouter as Router, Link, Route, Routes} from 'react-router-dom';
+import {Home} from 'lucide-react';
+import DNDCharts from "./components/charts";
+import AGGridWithLocalStorage from "./components/g2-table";
+import DataGridExample from "./components/react-data-grid-test";
+import HandsontableExample from "./components/handsontable_exmaple";
+import MarkdownEditor from "./components/markdown_exmaple";
+import Flow from "./components/reactflow_exmaple";
+import ReactLiveExample from "./components/react-live-example";
+import JsonToRecharts from "./components/user_defined_charts";
 
-const tableIcons = [
-  { id: 'bar', name: 'Bar Chart', icon: '📊' },
-  { id: 'line', name: 'Line Chart', icon: '📈' },
-  { id: 'pie', name: 'Pie Chart', icon: '🥧' },
-];
+const NavLink = ({to, children}) => (
+    <Link
+        to={to}
+        className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition duration-150 ease-in-out"
+    >
+        {children}
+    </Link>
+);
 
-const barChartData = [
-  { name: 'Jan', value: 400 },
-  { name: 'Feb', value: 300 },
-  { name: 'Mar', value: 600 },
-  { name: 'Apr', value: 800 },
-  { name: 'May', value: 500 },
-];
-
-const pieChartData = [
-  { name: 'Group A', value: 400 },
-  { name: 'Group B', value: 300 },
-  { name: 'Group C', value: 300 },
-  { name: 'Group D', value: 200 },
-];
-
-const chartData = [
-  { name: 'Jan', value: 400 },
-  { name: 'Feb', value: 300 },
-  { name: 'Mar', value: 600 },
-  { name: 'Apr', value: 800 },
-  { name: 'May', value: 500 },
-];
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-const ChartComponent = ({ type }) => {
-  if (type === 'bar') {
+function App() {
     return (
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={barChartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="value" fill="#8884d8" />
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  } else if (type === 'line') {
-    return (
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="value" stroke="#8884d8" />
-        </LineChart>
-      </ResponsiveContainer>
-    );
-  }
-  else if (type === 'pie') {
-    return (
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={pieChartData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            outerRadius="80%"
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {pieChartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
-    );
-  }
-  return <div>Unsupported chart type: {type}</div>;
-};
+        <Router>
+            <div className="min-h-screen bg-gray-100">
+                {/* Apple-style Navigation */}
+                <nav className="bg-white shadow-sm">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                            <div className="flex items-center">
+                                {/*<div className="flex-shrink-0">*/}
+                                {/*  <img className="h-8 w-8" src="/api/placeholder/32/32" alt="Logo"/>*/}
+                                {/*</div>*/}
+                                <div className="hidden md:block ml-10 flex items-baseline space-x-4">
+                                    <NavLink to="/">Home</NavLink>
+                                    <NavLink to="/dndtable">DND Table</NavLink>
+                                    <NavLink to="/ag_table">ag-table</NavLink>
+                                    <NavLink to="/HandsontableExample">HandsontableExample</NavLink>
+                                    <NavLink to="/MarkdownEditor">MarkdownEditor</NavLink>
+                                    <NavLink to="/ReactFlow">ReactFlow</NavLink>
+                                    <NavLink to="/ReactLiveExample">ReactLiveExample</NavLink>
+                                    <NavLink to="/JsonToRecharts">JsonToRecharts</NavLink>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
 
-const App = () => {
-  const [charts, setCharts] = useState([]);
-
-  const onDragStart = (e, id) => {
-    e.dataTransfer.setData('text/plain', id);
-  };
-
-  const onDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  const onDrop = (e) => {
-    e.preventDefault();
-    const type = e.dataTransfer.getData('text');
-    const newChart = {
-      id: `chart-${Date.now()}`,
-      type: type,
-      x: e.clientX - e.target.offsetLeft,
-      y: e.clientY - e.target.offsetTop,
-      width: 300,
-      height: 200,
-    };
-    setCharts([...charts, newChart]);
-  };
-
-  const onDragStop = (id, d) => {
-    setCharts(charts.map(chart => 
-      chart.id === id ? { ...chart, x: d.x, y: d.y } : chart
-    ));
-  };
-
-  const onResizeStop = (id, ref, delta, position) => {
-    setCharts(charts.map(chart => 
-      chart.id === id ? { 
-        ...chart, 
-        width: ref.style.width, 
-        height: ref.style.height,
-        ...position 
-      } : chart
-    ));
-  };
-
-  return (
-    <div className="dashboard">
-      <div className="sidebar">
-        <h3>Chart Types</h3>
-        {tableIcons.map((icon) => (
-          <div
-            key={icon.id}
-            className="icon"
-            draggable
-            onDragStart={(e) => onDragStart(e, icon.id)}
-          >
-            <span>{icon.icon}</span>
-            <span>{icon.name}</span>
-          </div>
-        ))}
-      </div>
-      <div className="canvas" onDragOver={onDragOver} onDrop={onDrop}>
-        <h3>Dashboard</h3>
-        {charts.map((chart) => (
-          <Rnd
-            key={chart.id}
-            default={{
-              x: chart.x,
-              y: chart.y,
-              width: chart.width,
-              height: chart.height,
-            }}
-            minWidth={200}
-            minHeight={150}
-            bounds="parent"
-            onDragStop={(e, d) => onDragStop(chart.id, d)}
-            onResizeStop={(e, direction, ref, delta, position) => 
-              onResizeStop(chart.id, ref, delta, position)
-            }
-          >
-            <div className="chart-container">
-              <ChartComponent type={chart.type} />
+                {/* Main Content Area */}
+                <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 border-2 mt-10 bg-blue-50">
+                    <div className="px-4 py-6 sm:px-0">
+                        <Routes>
+                            <Route path="/" element={<Home/>}/>
+                            <Route path="/dndtable" element={<DNDCharts/>}/>
+                            <Route path="/ag_table" element={<AGGridWithLocalStorage/>}/>
+                            <Route path="/react-data-grid" element={<DataGridExample/>}/>
+                            <Route path="/HandsontableExample" element={<HandsontableExample/>}/>
+                            <Route path="/MarkdownEditor" element={<MarkdownEditor/>}/>
+                            <Route path="/ReactFlow" element={<Flow/>}/>
+                            <Route path="/ReactLiveExample" element={<ReactLiveExample/>}/>
+                            <Route path="/JsonToRecharts" element={<JsonToRecharts/>}/>
+                        </Routes>
+                    </div>
+                </main>
             </div>
-          </Rnd>
-        ))}
-      </div>
-    </div>
-  );
-};
+        </Router>
+    );
+}
 
 export default App;
